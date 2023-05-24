@@ -1,6 +1,6 @@
 import {createElement} from '../render.js';
 
-const createPointInListDiv = () => (
+const createPointInListTemplate = () => (
   `<div class="event">
     <time class="event__date" datetime="2019-03-20">MAR 20</time>
     <div class="event__type">
@@ -29,14 +29,16 @@ const createPointInListDiv = () => (
   </div>`
 );
 
-class PointInListView {
+export default class PointInListView {
 
   getElement() {
     if (!this.element) {
-      this.element = createElement(createPointInListDiv());
+      this.element = createElement(this.getTemplate());
     }
     return this.element;
   }
-}
 
-export default PointInListView;
+  getTemplate() {
+    return createPointInListTemplate();
+  }
+}
