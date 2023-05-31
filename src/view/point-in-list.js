@@ -55,18 +55,28 @@ const createPointInListTemplate = (point) => {
 
 export default class PointInListView {
 
+  #element = null;
+
   constructor(point) {
     this.point = point;
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
+  get element() {
+    if (!this.#element) {
+      this.#element = createElement(this.template);
     }
-    return this.element;
+    return this.#element;
   }
 
-  getTemplate() {
+  get template() {
     return createPointInListTemplate(this.point);
+  }
+
+  get rollupButton() {
+    return this.element.querySelector('.event__rollup-btn');
+  }
+
+  removeElement() {
+    this.#element = null;
   }
 }
