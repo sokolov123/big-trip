@@ -31,14 +31,20 @@ const createTripSortTemplate = () => (
 
 export default class SortView {
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
+  #element = null;
+
+  get element() {
+    if (!this.#element) {
+      this.#element = createElement(this.template);
     }
-    return this.element;
+    return this.#element;
   }
 
-  getTemplate() {
+  get template() {
     return createTripSortTemplate();
+  }
+
+  removeElement() {
+    this.#element = null;
   }
 }
