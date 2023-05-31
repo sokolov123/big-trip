@@ -18,14 +18,20 @@ const createTripFiltersTemplate = () => (
 
 export default class FiltersView {
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
+  #element = null;
+
+  get element() {
+    if (!this.#element) {
+      this.#element = createElement(this.template);
     }
-    return this.element;
+    return this.#element;
   }
 
-  getTemplate() {
+  get template() {
     return createTripFiltersTemplate();
+  }
+
+  removeElement() {
+    this.#element = null;
   }
 }

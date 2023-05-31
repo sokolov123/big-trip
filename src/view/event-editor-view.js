@@ -142,18 +142,28 @@ const createEditEventTemplate = (point) => {
 
 export default class EventEditorView {
 
+  #element = null;
+
   constructor(point) {
     this.point = point;
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
+  get element() {
+    if (!this.#element) {
+      this.#element = createElement(this.template);
     }
-    return this.element;
+    return this.#element;
   }
 
-  getTemplate() {
+  get template() {
     return createEditEventTemplate(this.point);
+  }
+
+  get rollupButton() {
+    return this.element.querySelector('.event__rollup-btn');
+  }
+
+  removeElement() {
+    this.#element = null;
   }
 }
