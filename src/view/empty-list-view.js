@@ -1,4 +1,4 @@
-import { createElement } from '../render';
+import AbstractView from '../framework/view/abstract-view';
 
 const createEmptyListTemplate = () => (`<section class="trip-events">
           <h2 class="visually-hidden">Trip events</h2>
@@ -13,26 +13,19 @@ const createEmptyListTemplate = () => (`<section class="trip-events">
           -->
 </section>`);
 
-export default class EmptyListView {
-
-  #element = null;
-
-  constructor(point) {
-    this.point = point;
-  }
-
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-    return this.#element;
-  }
+export default class EmptyListView extends AbstractView {
 
   get template() {
-    return createEmptyListTemplate(this.point);
+    return createEmptyListTemplate();
   }
 
-  removeElement() {
-    this.#element = null;
-  }
+  setClickHandler = (callback) => {
+    this._callback.click = callback;
+    this.element.addEventListener('click', this.#clickHandler);
+  };
+
+  #clickHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.click();
+  };
 }
