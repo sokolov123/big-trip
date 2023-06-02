@@ -1,5 +1,5 @@
+import AbstractView from '../framework/view/abstract-view.js';
 import { offersByEventType } from '../mocks/const.js';
-import {createElement} from '../render.js';
 import { dateToString, timeToString } from '../utils/util.js';
 
 const createOfferTemplate = (offers, type) => {
@@ -53,30 +53,30 @@ const createPointInListTemplate = (point) => {
   </div>`);
 };
 
-export default class PointInListView {
+export default class PointInListView extends AbstractView {
 
-  #element = null;
+  #point = null;
 
   constructor(point) {
-    this.point = point;
-  }
-
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-    return this.#element;
+    super();
+    this.#point = point;
   }
 
   get template() {
-    return createPointInListTemplate(this.point);
+    return createPointInListTemplate(this.#point);
   }
 
   get rollupButton() {
     return this.element.querySelector('.event__rollup-btn');
   }
 
-  removeElement() {
-    this.#element = null;
-  }
+  setEditClickHandler = (callback) => {
+    this._callback.editClick = callback;
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editClickHandler);
+  };
+
+  #editClickHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.editClick();
+  };
 }

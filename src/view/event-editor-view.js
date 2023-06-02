@@ -1,5 +1,5 @@
+import AbstractView from '../framework/view/abstract-view.js';
 import { destinations, offersByEventType } from '../mocks/const.js';
-import { createElement } from '../render.js';
 import { separateDate } from '../utils/util.js';
 
 const createOffersTemplate = (offers, type) => {
@@ -140,30 +140,40 @@ const createEditEventTemplate = (point) => {
   </form>`
   );};
 
-export default class EventEditorView {
+export default class EventEditorView extends AbstractView {
 
-  #element = null;
+  #point = null;
 
   constructor(point) {
-    this.point = point;
-  }
-
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-    return this.#element;
+    super();
+    this.#point = point;
   }
 
   get template() {
-    return createEditEventTemplate(this.point);
+    return createEditEventTemplate(this.#point);
   }
 
   get rollupButton() {
     return this.element.querySelector('.event__rollup-btn');
   }
 
-  removeElement() {
-    this.#element = null;
-  }
+  setRollupHandler = (callback) => {
+    this._callback.rollup = callback;
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rollupHandler);
+  };
+
+  setFormSubmitHandler = (callback) => {
+    this._callback.formSubmit = callback;
+    this.element.addEventListener('submit', this.#formSubmitHandler);
+  };
+
+  #rollupHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.rollup();
+  };
+
+  #formSubmitHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.formSubmit();
+  };
 }

@@ -16,7 +16,7 @@ export default class EventsPresenter {
     this.eventPoints = [...pointsModel.getPoints()];
     this.eventDestinations = [...pointsModel.getDestinations()];
     this.eventOffers = [...pointsModel.getOffers()];
-    render (new SortView(), this.eventsContainer);
+    render(new SortView(), this.eventsContainer);
     render(this.#eventsUlistView, this.eventsContainer);
     const currentOffersByType = this.pointsModel.getOffersByType(this.eventPoints[0]);
     // render(new EventCreatorView(), this.#eventsUlistView.getElement());
@@ -54,16 +54,15 @@ export default class EventsPresenter {
       }
     };
 
-    eventPoint.rollupButton.addEventListener('click', () => {
+    eventPoint.setEditClickHandler(() => {
       replacePointToEdit(eventPoint, editPoint);
       document.addEventListener('keydown', onEscKeyDown);
     });
-    editPoint.rollupButton.addEventListener('click', () => {
+    editPoint.setRollupHandler(() => {
       replaceEditToPoint(eventPoint, editPoint);
       document.removeEventListener('keydown', onEscKeyDown);
     });
-    editPoint.element.addEventListener('submit', (evt) => {
-      evt.preventDefault();
+    editPoint.setFormSubmitHandler(() => {
       replaceEditToPoint(eventPoint, editPoint);
       document.removeEventListener('keydown', onEscKeyDown);
     });
