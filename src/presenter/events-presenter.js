@@ -5,6 +5,7 @@ import PointInListView from '../view/point-in-list.js';
 import EventsUlistView from '../view/events-ulist-view.js';
 import { render } from '../render.js';
 import EmptyListView from '../view/empty-list-view.js';
+import { filterTypes } from '../view/filters-view.js';
 
 export default class EventsPresenter {
 
@@ -22,7 +23,7 @@ export default class EventsPresenter {
     // render(new EventCreatorView(), this.#eventsUlistView.getElement());
 
     if (this.eventPoints.length === 0) {
-      render(new EmptyListView, this.#eventsUlistView.element);
+      render(new EmptyListView(filterTypes.EVERYTHING), this.#eventsUlistView.element);
     } else {
       for (let i = 0; i < this.eventPoints.length; i++) {
         const editPoint = new EventEditorView(this.eventPoints[i],
