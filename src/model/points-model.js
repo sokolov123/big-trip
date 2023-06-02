@@ -2,7 +2,8 @@ import { destinations, offersByEventType } from '../mocks/const.js';
 import { generatePoint } from '../mocks/point-mock.js';
 
 export default class PointsModel {
-  points = Array.from({length: 5}, generatePoint);
+
+  points = Array.from({length: 0}, generatePoint);
   getPoints = () => this.points;
 
   getDestinations = () => destinations;
@@ -15,6 +16,9 @@ export default class PointsModel {
   };
 
   getOffersByType = (point) => {
+    if (this.points.length === 0) {
+      return 'no-offers';
+    }
     this.offersByType = offersByEventType.find((offer) => offer.type === point.type);
     return this.offersByType;
   };

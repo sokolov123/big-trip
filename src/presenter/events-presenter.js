@@ -4,6 +4,7 @@ import EventEditorView from '../view/event-editor-view.js';
 import PointInListView from '../view/point-in-list.js';
 import EventsUlistView from '../view/events-ulist-view.js';
 import { render } from '../render.js';
+import EmptyListView from '../view/empty-list-view.js';
 
 export default class EventsPresenter {
 
@@ -20,14 +21,18 @@ export default class EventsPresenter {
     const currentOffersByType = this.pointsModel.getOffersByType(this.eventPoints[0]);
     // render(new EventCreatorView(), this.#eventsUlistView.getElement());
 
-    for (let i = 0; i < this.eventPoints.length; i++) {
-      const editPoint = new EventEditorView(this.eventPoints[i],
-        this.eventDestinations,
-        currentOffersByType);
-      const eventPoint = new PointInListView(this.eventPoints[i],
-        this.eventDestinations[i],
-        this.eventOffers[i]);
-      this.#renderPoint(eventPoint, editPoint);
+    if (this.eventPoints.length === 0) {
+      render(new EmptyListView, this.#eventsUlistView.element);
+    } else {
+      for (let i = 0; i < this.eventPoints.length; i++) {
+        const editPoint = new EventEditorView(this.eventPoints[i],
+          this.eventDestinations,
+          currentOffersByType);
+        const eventPoint = new PointInListView(this.eventPoints[i],
+          this.eventDestinations[i],
+          this.eventOffers[i]);
+        this.#renderPoint(eventPoint, editPoint);
+      }
     }
   };
 
