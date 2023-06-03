@@ -9,6 +9,7 @@ const PointMode = {
 
 export default class PointPresenter {
 
+  #point = null;
   #editPoint = null;
   #eventPoint = null;
   #container = null;
@@ -20,8 +21,13 @@ export default class PointPresenter {
     this._callback.beforeEdit = callback;
   }
 
+  get point() {
+    return this.#point;
+  }
+
   init = (point) => {
 
+    this.#point = point;
     const prevEventPoint = this.#eventPoint;
     const prevEditPoint = this.#editPoint;
     this.#editPoint = new EventEditorView(point);
@@ -45,12 +51,15 @@ export default class PointPresenter {
     }
 
     if (this.#mode === PointMode.DEFAULT) {
-      replace(this.#eventPoint, prevEventPoint);
+      render(this.#eventPoint, this.#container.element);
     }
 
     if (this.#mode === PointMode.EDIT) {
-      replace(this.#editPoint, prevEditPoint);
+      render(this.#editPoint, this.#container.element);
     }
+
+    remove(prevEventPoint);
+    remove(prevEditPoint);
   };
 
   destroy = () => {
