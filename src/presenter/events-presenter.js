@@ -1,17 +1,22 @@
 import SortView from '../view/sort-view.js';
 import { SortModes } from '../view/sort-view.js';
-// import EventCreatorView from '../view/event-creator-view.js';
+import EventCreatorView from '../view/event-creator-view.js';
 import EventsUlistView from '../view/events-ulist-view.js';
 import { render } from '../framework/render.js';
 import EmptyListView from '../view/empty-list-view.js';
 import { filterTypes } from '../view/filters-view.js';
 import PointPresenter from './point-presenter.js';
+import { PRIMARY_POINT } from '../mocks/const.js';
 import { sortByDay, sortByEvent, sortByOffers, sortByPrice, sortByTime, firstSort } from '../utils/sorts.js';
 
 export default class EventsPresenter {
 
   #eventsUlistView = new EventsUlistView();
   #pointPresenters = [];
+
+  get pointPresenters() {
+    return this.#pointPresenters;
+  }
 
   init = (eventsContainer, pointsModel) => {
     this.eventsContainer = eventsContainer;
@@ -22,17 +27,30 @@ export default class EventsPresenter {
     this.eventOffers = [...pointsModel.getOffers()];
     render(new SortView(this.#sort), this.eventsContainer);
     render(this.#eventsUlistView, this.eventsContainer);
-    // render(new EventCreatorView(), this.#eventsUlistView.getElement());
+    document.querySelector('.trip-main__event-add-btn').addEventListener('click', () => {
+      this.#clearAllPoints();
+      render(new EventCreatorView(PRIMARY_POINT), this.#eventsUlistView.element);
+      this.#renderPoints();
+    });
 
+    this.#renderPoints();
+  };
+
+  #renderPoints = () => {
     if (this.eventPoints.length === 0) {
       render(new EmptyListView(filterTypes.EVERYTHING), this.#eventsUlistView.element);
     } else {
       for (let i = 0; i < this.eventPoints.length; i++) {
-        const pointPresenter = new PointPresenter(this.#eventsUlistView, this.#resetAllPoints);
+        const pointPresenter = new PointPresenter(this.#eventsUlistView, this.#resetAllPoints, this.#deletePoint);
         pointPresenter.init(this.eventPoints[i]);
         this.#pointPresenters[i] = pointPresenter;
       }
     }
+  };
+
+  #deletePoint = (toDelete) => {
+    const index = this.#pointPresenters.indexOf(toDelete);
+    this.#pointPresenters.splice(index, 1);
   };
 
   #clearAllPoints = () => {
