@@ -1,6 +1,6 @@
-import AbstractView from '../framework/view/abstract-view.js';
-import { destinations, offersByEventType } from '../mocks/const.js';
-import { separateDate } from '../utils/util.js';
+import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
+import { eventTypes, destinations, offersByEventType } from '../mocks/const.js';
+import { separateDate, capitalizeFirstLetter } from '../utils/util.js';
 
 const createOffersTemplate = (offers, type) => {
   const currentOffersByType = offersByEventType.find((o) => o.type === type).offers;
@@ -25,6 +25,34 @@ const createOffersTemplate = (offers, type) => {
   return offersContainer.innerHTML;
 };
 
+const createDestinations = () => {
+  const container = document.createElement('div');
+  const datalist = document.createElement('datalist');
+  datalist.setAttribute('id', 'destination-list-1');
+  for (let i = 0; i < destinations.length; i++) {
+    const option = document.createElement('option');
+    option.setAttribute('value', destinations[i].name);
+    datalist.appendChild(option);
+  }
+  container.appendChild(datalist);
+  return container.innerHTML;
+};
+
+const createTypesTemplate = (type) => {
+  const container = document.createElement('div');
+  const types = Object.values(eventTypes);
+  for (let i = 0; i < types.length; i++) {
+    const typeElement = document.createElement('div');
+    typeElement.classList.add('event__type-item');
+    typeElement.insertAdjacentHTML('beforeend', `
+    <input id="event-type-${types[i]}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value=${types[i]} ${type === types[i] ? 'checked' : ''}>
+    <label class="event__type-label  event__type-label--${types[i]}" for="event-type-${types[i]}-1">${capitalizeFirstLetter(types[i])}</label>
+    `);
+    container.appendChild(typeElement);
+  }
+  return container.innerHTML;
+};
+
 const createEditEventTemplate = (point) => {
   const {basePrice, dateFrom, dateTo, destination, offers, type} = point;
   return (
@@ -40,65 +68,17 @@ const createEditEventTemplate = (point) => {
         <div class="event__type-list">
           <fieldset class="event__type-group">
             <legend class="visually-hidden">Event type</legend>
-
-            <div class="event__type-item">
-              <input id="event-type-taxi-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="taxi">
-              <label class="event__type-label  event__type-label--taxi" for="event-type-taxi-1">Taxi</label>
-            </div>
-
-            <div class="event__type-item">
-              <input id="event-type-bus-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="bus">
-              <label class="event__type-label  event__type-label--bus" for="event-type-bus-1">Bus</label>
-            </div>
-
-            <div class="event__type-item">
-              <input id="event-type-train-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="train">
-              <label class="event__type-label  event__type-label--train" for="event-type-train-1">Train</label>
-            </div>
-
-            <div class="event__type-item">
-              <input id="event-type-ship-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="ship">
-              <label class="event__type-label  event__type-label--ship" for="event-type-ship-1">Ship</label>
-            </div>
-
-            <div class="event__type-item">
-              <input id="event-type-drive-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="drive">
-              <label class="event__type-label  event__type-label--drive" for="event-type-drive-1">Drive</label>
-            </div>
-
-            <div class="event__type-item">
-              <input id="event-type-flight-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="flight">
-              <label class="event__type-label  event__type-label--flight" for="event-type-flight-1">Flight</label>
-            </div>
-
-            <div class="event__type-item">
-              <input id="event-type-check-in-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="check-in">
-              <label class="event__type-label  event__type-label--check-in" for="event-type-check-in-1">Check-in</label>
-            </div>
-
-            <div class="event__type-item">
-              <input id="event-type-sightseeing-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="sightseeing">
-              <label class="event__type-label  event__type-label--sightseeing" for="event-type-sightseeing-1">Sightseeing</label>
-            </div>
-
-            <div class="event__type-item">
-              <input id="event-type-restaurant-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="restaurant">
-              <label class="event__type-label  event__type-label--restaurant" for="event-type-restaurant-1">Restaurant</label>
-            </div>
+              ${createTypesTemplate(type)}
           </fieldset>
         </div>
       </div>
 
       <div class="event__field-group  event__field-group--destination">
         <label class="event__label  event__type-output" for="event-destination-1">
-          ${type.toUpperCase()}
+          ${capitalizeFirstLetter(type)}
         </label>
-        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value=${destination.name} list="destination-list-1">
-        <datalist id="destination-list-1">
-          <option value=${destinations[0].name}></option>
-          <option value=${destinations[1].name}></option>
-          <option value=${destinations[2].name}></option>
-        </datalist>
+        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value=${destination.name} list="destination-list-1" autocomplete="off">
+          ${createDestinations(destinations)}
       </div>
 
       <div class="event__field-group  event__field-group--time">
@@ -114,7 +94,7 @@ const createEditEventTemplate = (point) => {
           <span class="visually-hidden">Price</span>
           &euro;
         </label>
-        <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value=${basePrice}>
+        <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value=${basePrice} autocomplete="off">
       </div>
 
       <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -135,26 +115,40 @@ const createEditEventTemplate = (point) => {
       <section class="event__section  event__section--destination">
         <h3 class="event__section-title  event__section-title--destination">Destination</h3>
         <p class="event__destination-description">${destination.description}</p>
+
+        <div class="event__photos-container">
+          <div class="event__photos-tape">
+            <img class="event__photo" src=${destination.pictures[0].src} alt="Event photo">
+            <img class="event__photo" src=${destination.pictures[1].src} alt="Event photo">
+          </div>
+        </div>
       </section>
     </section>
   </form>`
   );};
 
-export default class EventEditorView extends AbstractView {
-
-  #point = null;
+export default class EventEditorView extends AbstractStatefulView {
 
   constructor(point) {
     super();
-    this.#point = point;
+    this._state = point;
+
+    this.#setInnerHandlers();
   }
 
   get template() {
-    return createEditEventTemplate(this.#point);
+    return createEditEventTemplate(this._state);
   }
 
   get rollupButton() {
     return this.element.querySelector('.event__rollup-btn');
+  }
+
+  _restoreHandlers() {
+    this.#setInnerHandlers();
+    this.setRollupHandler(this._callback.rollup);
+    this.setFormSubmitHandler(this._callback.formSubmit);
+    this.setDeleteHandler(this._callback.onDelete);
   }
 
   setRollupHandler = (callback) => {
@@ -167,8 +161,26 @@ export default class EventEditorView extends AbstractView {
     this.element.addEventListener('submit', this.#formSubmitHandler);
   };
 
-  #rollupHandler = (evt) => {
-    evt.preventDefault();
+  setDeleteHandler = (callback) => {
+    this._callback.onDelete = callback;
+    this.element.addEventListener('reset', this.#formDeleteHandler);
+  };
+
+  #setInnerHandlers = () => {
+    const radioTypeBtns = this.element.querySelectorAll('.event__type-input');
+    radioTypeBtns.forEach((btn) => btn.addEventListener('input', (evt) => {
+      this._state.type = evt.target.value;
+      this.updateElement(this._state);
+    }));
+
+    const destinationBtn = this.element.querySelector('.event__input--destination');
+    destinationBtn.addEventListener('change', (evt) => {
+      this._state.destination = destinations.find((obj) => obj.name === evt.target.value);
+      this.updateElement(this._state);
+    });
+  };
+
+  #rollupHandler = () => {
     this._callback.rollup();
   };
 
@@ -176,4 +188,11 @@ export default class EventEditorView extends AbstractView {
     evt.preventDefault();
     this._callback.formSubmit();
   };
+
+  #formDeleteHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.onDelete();
+  };
 }
+
+export {createTypesTemplate, createOffersTemplate, createDestinations};

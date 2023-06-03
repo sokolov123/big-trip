@@ -1,85 +1,43 @@
-import AbstractView from '../framework/view/abstract-view.js';
+import { remove } from '../framework/render.js';
+import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
+import { destinations } from '../mocks/const.js';
+import { createTypesTemplate, createDestinations, createOffersTemplate } from './event-editor-view.js';
+import { capitalizeFirstLetter, separateDate } from '../utils/util.js';
 
-const createEventTemplate = () => (
-  `<form class="event event--edit" action="#" method="post">
+const createEventTemplate = (point) => {
+  const {dateFrom, dateTo, destination, offers, type} = point;
+  return (
+    `<form class="event event--edit" action="#" method="post">
     <header class="event__header">
       <div class="event__type-wrapper">
         <label class="event__type  event__type-btn" for="event-type-toggle-1">
           <span class="visually-hidden">Choose event type</span>
-          <img class="event__type-icon" width="17" height="17" src="img/icons/flight.png" alt="Event type icon">
+          <img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
         </label>
         <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
 
         <div class="event__type-list">
           <fieldset class="event__type-group">
             <legend class="visually-hidden">Event type</legend>
-
-            <div class="event__type-item">
-              <input id="event-type-taxi-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="taxi">
-              <label class="event__type-label  event__type-label--taxi" for="event-type-taxi-1">Taxi</label>
-            </div>
-
-            <div class="event__type-item">
-              <input id="event-type-bus-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="bus">
-              <label class="event__type-label  event__type-label--bus" for="event-type-bus-1">Bus</label>
-            </div>
-
-            <div class="event__type-item">
-              <input id="event-type-train-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="train">
-              <label class="event__type-label  event__type-label--train" for="event-type-train-1">Train</label>
-            </div>
-
-            <div class="event__type-item">
-              <input id="event-type-ship-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="ship">
-              <label class="event__type-label  event__type-label--ship" for="event-type-ship-1">Ship</label>
-            </div>
-
-            <div class="event__type-item">
-              <input id="event-type-drive-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="drive">
-              <label class="event__type-label  event__type-label--drive" for="event-type-drive-1">Drive</label>
-            </div>
-
-            <div class="event__type-item">
-              <input id="event-type-flight-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="flight" checked>
-              <label class="event__type-label  event__type-label--flight" for="event-type-flight-1">Flight</label>
-            </div>
-
-            <div class="event__type-item">
-              <input id="event-type-check-in-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="check-in">
-              <label class="event__type-label  event__type-label--check-in" for="event-type-check-in-1">Check-in</label>
-            </div>
-
-            <div class="event__type-item">
-              <input id="event-type-sightseeing-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="sightseeing">
-              <label class="event__type-label  event__type-label--sightseeing" for="event-type-sightseeing-1">Sightseeing</label>
-            </div>
-
-            <div class="event__type-item">
-              <input id="event-type-restaurant-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="restaurant">
-              <label class="event__type-label  event__type-label--restaurant" for="event-type-restaurant-1">Restaurant</label>
-            </div>
+            ${createTypesTemplate(type)}
           </fieldset>
         </div>
       </div>
 
       <div class="event__field-group  event__field-group--destination">
         <label class="event__label  event__type-output" for="event-destination-1">
-          Flight
+          ${capitalizeFirstLetter(type)}
         </label>
-        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="Geneva" list="destination-list-1">
-        <datalist id="destination-list-1">
-          <option value="Amsterdam"></option>
-          <option value="Geneva"></option>
-          <option value="Chamonix"></option>
-        </datalist>
+        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="Kazan" list="destination-list-1" autocomplete="off">
+          ${createDestinations(destinations)}
       </div>
 
       <div class="event__field-group  event__field-group--time">
         <label class="visually-hidden" for="event-start-time-1">From</label>
-        <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="19/03/19 00:00">
+        <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value=${separateDate(dateFrom)}>
         &mdash;
         <label class="visually-hidden" for="event-end-time-1">To</label>
-        <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="19/03/19 00:00">
+        <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value=${separateDate(dateTo)}>
       </div>
 
       <div class="event__field-group  event__field-group--price">
@@ -87,7 +45,7 @@ const createEventTemplate = () => (
           <span class="visually-hidden">Price</span>
           &euro;
         </label>
-        <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="">
+        <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="" autocomplete="off">
       </div>
 
       <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -98,74 +56,86 @@ const createEventTemplate = () => (
         <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
         <div class="event__available-offers">
-          <div class="event__offer-selector">
-            <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage" checked>
-            <label class="event__offer-label" for="event-offer-luggage-1">
-              <span class="event__offer-title">Add luggage</span>
-              &plus;&euro;&nbsp;
-              <span class="event__offer-price">30</span>
-            </label>
-          </div>
-
-          <div class="event__offer-selector">
-            <input class="event__offer-checkbox  visually-hidden" id="event-offer-comfort-1" type="checkbox" name="event-offer-comfort" checked>
-            <label class="event__offer-label" for="event-offer-comfort-1">
-              <span class="event__offer-title">Switch to comfort class</span>
-              &plus;&euro;&nbsp;
-              <span class="event__offer-price">100</span>
-            </label>
-          </div>
-
-          <div class="event__offer-selector">
-            <input class="event__offer-checkbox  visually-hidden" id="event-offer-meal-1" type="checkbox" name="event-offer-meal">
-            <label class="event__offer-label" for="event-offer-meal-1">
-              <span class="event__offer-title">Add meal</span>
-              &plus;&euro;&nbsp;
-              <span class="event__offer-price">15</span>
-            </label>
-          </div>
-
-          <div class="event__offer-selector">
-            <input class="event__offer-checkbox  visually-hidden" id="event-offer-seats-1" type="checkbox" name="event-offer-seats">
-            <label class="event__offer-label" for="event-offer-seats-1">
-              <span class="event__offer-title">Choose seats</span>
-              &plus;&euro;&nbsp;
-              <span class="event__offer-price">5</span>
-            </label>
-          </div>
-
-          <div class="event__offer-selector">
-            <input class="event__offer-checkbox  visually-hidden" id="event-offer-train-1" type="checkbox" name="event-offer-train">
-            <label class="event__offer-label" for="event-offer-train-1">
-              <span class="event__offer-title">Travel by train</span>
-              &plus;&euro;&nbsp;
-              <span class="event__offer-price">40</span>
-            </label>
-          </div>
+          ${createOffersTemplate(offers, type)}
         </div>
       </section>
 
       <section class="event__section  event__section--destination">
         <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-        <p class="event__destination-description">Geneva is a city in Switzerland that lies at the southern tip of expansive Lac Léman (Lake Geneva). Surrounded by the Alps and Jura mountains, the city has views of dramatic Mont Blanc.</p>
+        <p class="event__destination-description">${destination.description}</p>
 
         <div class="event__photos-container">
           <div class="event__photos-tape">
-            <img class="event__photo" src="img/photos/1.jpg" alt="Event photo">
-            <img class="event__photo" src="img/photos/2.jpg" alt="Event photo">
-            <img class="event__photo" src="img/photos/3.jpg" alt="Event photo">
-            <img class="event__photo" src="img/photos/4.jpg" alt="Event photo">
-            <img class="event__photo" src="img/photos/5.jpg" alt="Event photo">
+            <img class="event__photo" src=${destination.pictures[0].src} alt="Event photo">
+            <img class="event__photo" src=${destination.pictures[1].src} alt="Event photo">
           </div>
+        </div>
         </div>
       </section>
     </section>
   </form>`
-);
+  );
+};
 
-export default class EventCreatorView extends AbstractView {
+export default class EventCreatorView extends AbstractStatefulView {
+
+  constructor(point) {
+    super();
+
+    this._state = point;
+    this.#setInnerHandlers();
+    this.#cancelClickHandler();
+  }
 
   get template() {
-    return createEventTemplate();
+    return createEventTemplate(this._state);
   }
+
+  _restoreHandlers() {
+    this.#setInnerHandlers();
+    this.setFormSubmitHandler(this._callback.formSubmit);
+  }
+
+  setFormSubmitHandler = (callback) => {
+    this._callback.formSubmit = callback;
+    this.element.addEventListener('submit', this.#formSubmitHandler);
+  };
+
+  #setInnerHandlers = () => {
+    const radioTypeBtns = this.element.querySelectorAll('.event__type-input');
+    radioTypeBtns.forEach((btn) => btn.addEventListener('input', (evt) => {
+      this._state.type = evt.target.value;
+      this.updateElement(this._state);
+    }));
+
+    const destinationBtn = this.element.querySelector('.event__input--destination');
+    destinationBtn.addEventListener('change', (evt) => {
+      this._state.destination = destinations.find((obj) => obj.name === evt.target.value);
+      this.updateElement(this._state);
+    });
+
+    this.element.addEventListener('keydown', this.#onEscKeyDown);
+  };
+
+
+  #cancelClickHandler = () => {
+    this.element.addEventListener('reset', (evt) => {
+      evt.preventDefault();
+      document.removeEventListener('keydown', this.#onEscKeyDown);
+      remove(this);
+    });
+  };
+
+  #formSubmitHandler = (evt) => {
+    evt.preventDefault();
+    document.removeEventListener('keydown', this.#onEscKeyDown);
+    this._callback.formSubmit();
+  };
+
+  #onEscKeyDown = (evt) => {
+    if (evt.key === 'Escape' || evt.key === 'Esc') {
+      evt.preventDefault();
+      remove(this);
+    }
+  };
 }

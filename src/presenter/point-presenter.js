@@ -16,9 +16,10 @@ export default class PointPresenter {
   #mode = PointMode.DEFAULT;
   _callback = {};
 
-  constructor(container, callback) {
+  constructor(container, beforeEdit, onDelete) {
     this.#container = container;
-    this._callback.beforeEdit = callback;
+    this._callback.beforeEdit = beforeEdit;
+    this._callback.onDelete = onDelete;
   }
 
   get point() {
@@ -45,6 +46,11 @@ export default class PointPresenter {
       this.#replaceEditToPoint(this.#eventPoint, this.#editPoint);
     });
 
+    this.#editPoint.setDeleteHandler(() => {
+      this._callback.onDelete(this);
+      this.destroy();
+    });
+
     if (prevEventPoint === null || prevEditPoint === null) {
       render(this.#eventPoint, this.#container.element);
       return;
@@ -63,8 +69,8 @@ export default class PointPresenter {
   };
 
   destroy = () => {
-    remove(this.#eventPoint);
     remove(this.#editPoint);
+    remove(this.#eventPoint);
   };
 
   resetView = () => {

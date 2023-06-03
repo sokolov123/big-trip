@@ -2,7 +2,10 @@ import {getRandomInteger} from '../utils/util.js';
 import {destinations, eventTypes, offersByEventType} from './const.js';
 
 
-const generateEventType = () => eventTypes[getRandomInteger(0, eventTypes.length - 1)];
+const generateEventType = () => {
+  const key = Object.keys(eventTypes)[getRandomInteger(0, Object.keys(eventTypes).length - 1)];
+  return eventTypes[key];
+};
 
 const getRandomOffersIds = (type) => {
   const randomIds = [];

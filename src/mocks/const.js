@@ -1,6 +1,16 @@
 import { getRandomInteger } from '../utils/util';
 
-const eventTypes = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
+const eventTypes = {
+  TAXI: 'taxi',
+  BUS: 'bus',
+  TRAIN: 'train',
+  SHIP: 'ship',
+  DRIVE: 'drive',
+  FLIGHT: 'flight',
+  CHECKIN: 'check-in',
+  SIGHTSEEING: 'sightseeing',
+  RESTAURANT: 'restaurant'
+};
 const descriptions = [
   'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
   'Cras aliquet varius magna, non porta ligula feugiat eget.',
@@ -13,7 +23,7 @@ const generatePicturesArray = () => {
   const resultPicturesArray = [];
   for (let i = 0; i < 5; i++) {
     resultPicturesArray[i] = {
-      src:'http://picsum.photos/248/152?',
+      src: `img/photos/${getRandomInteger(1, 11)}.jpg`,
       description: `Some description for ${i} photo`,
     };
   }
@@ -203,4 +213,14 @@ const offersByEventType = [
   }
 ];
 
-export {eventTypes, offersByEventType, destinations};
+const PRIMARY_POINT = {
+  id: getRandomInteger(1, 100),
+  basePrice: '',
+  dateFrom: '2023-01-01T00:00:56.845Z',
+  dateTo: '2023-01-01T01:00:13.375Z',
+  destination: destinations[0],
+  offers: offersByEventType.find((obj) => obj.type === eventTypes.FLIGHT).offers,
+  type: eventTypes.FLIGHT,
+};
+
+export {eventTypes, offersByEventType, destinations, PRIMARY_POINT};

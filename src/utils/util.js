@@ -11,4 +11,6 @@ const dateToString = (date) => dayjs(date).format('MMM D');
 const separateDate = (date) => dayjs(date).format('YY/MM/DD-HH:mm');
 const timeToString = (date) => dayjs(date).format('H:mm');
 
-export {getRandomInteger, dateToString, timeToString, separateDate};
+const capitalizeFirstLetter = (string) => string.charAt(0).toUpperCase() + string.slice(1);
+
+export {getRandomInteger, dateToString, timeToString, separateDate, capitalizeFirstLetter};
