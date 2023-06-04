@@ -2,28 +2,35 @@ import SortView from '../view/sort-view.js';
 import { SortModes } from '../view/sort-view.js';
 import EventCreatorView from '../view/event-creator-view.js';
 import EventsUlistView from '../view/events-ulist-view.js';
-import { render, remove } from '../framework/render.js';
+import { render, remove, replace } from '../framework/render.js';
 import EmptyListView from '../view/empty-list-view.js';
-import { filterTypes } from '../view/filters-view.js';
+import { FilterTypes, UpdateTypes } from '../mocks/const.js';
 import PointPresenter from './point-presenter.js';
 import { PRIMARY_POINT } from '../mocks/const.js';
 import { sortByDay, sortByEvent, sortByOffers, sortByPrice, sortByTime } from '../utils/sorts.js';
+import { filter } from '../utils/filter.js';
 
 export default class EventsPresenter {
   #eventsContainer = null;
   #pointsModel = null;
+  #filtersModel = null;
   #currentSortMode = SortModes.DAY;
 
   #eventsUlistView = new EventsUlistView();
-  #emptyListView = new EmptyListView(filterTypes.EVERYTHING);
+  #emptyListView = null;
   #eventCreator = null;
   #sortView = new SortView(this.#currentSortMode);
   #newEventBtn = document.querySelector('.trip-main__event-add-btn');
   #pointPresenters = [];
 
-  constructor(eventsContainer, pointsModel) {
+  constructor(eventsContainer, pointsModel, filtersModel) {
     this.#eventsContainer = eventsContainer;
     this.#pointsModel = pointsModel;
+    this.#filtersModel = filtersModel;
+    this.#emptyListView = new EmptyListView(filtersModel.filter);
+
+    this.#pointsModel.addObserver(this.#handleModelEvent);
+    this.#filtersModel.addObserver(this.#handleModelEvent);
   }
 
   get pointPresenters() {
@@ -31,26 +38,29 @@ export default class EventsPresenter {
   }
 
   get points() {
+    const filterType = this.#filtersModel.filter;
+    const points = this.#pointsModel.points;
+    const filteredPoints = filter[filterType](points);
     switch (this.#currentSortMode) {
       case SortModes.DAY:
-        return sortByDay(this.#pointsModel.points);
+        return sortByDay(filteredPoints);
       case SortModes.EVENT:
-        return sortByEvent(this.#pointsModel.points);
+        return sortByEvent(filteredPoints);
       case SortModes.TIME:
-        return sortByTime(this.#pointsModel.points);
+        return sortByTime(filteredPoints);
       case SortModes.PRICE:
-        return sortByPrice(this.#pointsModel.points);
+        return sortByPrice(filteredPoints);
       case SortModes.OFFERS:
-        return sortByOffers(this.#pointsModel.points);
+        return sortByOffers(filteredPoints);
     }
-    return this.#pointsModel.points;
+    return filteredPoints;
   }
 
   init = () => {
     this.#renderSort();
-    this.#eventCreator = new EventCreatorView(PRIMARY_POINT);
     render(this.#eventsUlistView, this.#eventsContainer);
     this.#newEventBtn.addEventListener('click', (evt) => {
+      this.#eventCreator = new EventCreatorView(structuredClone(PRIMARY_POINT), this.#addPoint, this.#resetAllPoints);
       evt.target.disabled = true;
       this.#clearAllPoints();
       render(this.#eventCreator, this.#eventsUlistView.element);
@@ -71,6 +81,28 @@ export default class EventsPresenter {
     this.#renderPoints();
   };
 
+  #handleModelEvent = (updateType, data) => {
+    switch (updateType) {
+      case UpdateTypes.PATCH:
+        this.#pointPresenters.find((obj) => obj.point === data).init(data);
+        break;
+      case UpdateTypes.MINOR:
+        this.#clearAllPoints();
+        this.#renderPoints();
+        break;
+      case UpdateTypes.MAJOR: {
+        this.#currentSortMode = SortModes.DAY;
+        const prevSortView = this.#sortView;
+        this.#sortView = new SortView(this.#currentSortMode);
+        this.#sortView.setSortModeChangeHandler(this.#handleSortModeChange);
+        replace(this.#sortView, prevSortView);
+        this.#clearAllPoints();
+        this.#renderPoints();
+        break;
+      }
+    }
+  };
+
   #renderSort = () => {
     this.#sortView = new SortView(this.#currentSortMode);
     this.#sortView.setSortModeChangeHandler(this.#handleSortModeChange);
@@ -79,7 +111,10 @@ export default class EventsPresenter {
   };
 
   #renderPoint = (point) => {
-    const pointPresenter = new PointPresenter(this.#eventsUlistView, this.#resetAllPoints, this.#deletePoint);
+    const pointPresenter = new PointPresenter(this.#eventsUlistView,
+      this.#resetAllPoints,
+      this.#deletePoint,
+      this.#editPoint);
     this.#pointPresenters.push(pointPresenter);
     pointPresenter.init(point);
   };
@@ -88,16 +123,33 @@ export default class EventsPresenter {
     if (this.points.length === 0) {
       render(this.#emptyListView, this.#eventsUlistView.element);
     } else {
+      remove(this.#emptyListView);
       for (let i = 0; i < this.points.length; i++) {
         this.#renderPoint(this.points[i]);
       }
     }
   };
 
+  #addPoint = (point) => {
+    this.#clearAllPoints();
+    this.#pointsModel.addPoint(point);
+    this.#filtersModel.setFilter(UpdateTypes.MAJOR, FilterTypes.EVERYTHING);
+    remove(this.#eventCreator);
+    this.#eventCreator = new EventCreatorView(structuredClone(PRIMARY_POINT), this.#addPoint, this.#resetAllPoints);
+    this.#newEventBtn.disabled = false;
+  };
+
+  #editPoint = (point) => {
+    this.#handleModelEvent = (UpdateTypes.PATCH, point);
+    this.#clearAllPoints();
+    this.#renderPoints();
+  };
+
   #deletePoint = (toDelete) => {
-    const index = this.points.indexOf(toDelete);
-    this.points.splice(index, 1);
-    if (this.points.length === 0) {
+    const index = this.#pointsModel.points.indexOf(toDelete);
+    this.#pointsModel.points.splice(index, 1);
+    if (filter[this.#filtersModel.filter](this.points).length === 0) {
+      this.#emptyListView = new EmptyListView(this.#filtersModel.filter);
       render(this.#emptyListView, this.#eventsUlistView.element);
     }
   };
@@ -110,7 +162,7 @@ export default class EventsPresenter {
     this.#pointPresenters.forEach((pp) => pp.resetView());
     if (this.#eventCreator !== null) {
       remove(this.#eventCreator);
-      this.#eventCreator = new EventCreatorView(PRIMARY_POINT);
+      this.#eventCreator = new EventCreatorView(structuredClone(PRIMARY_POINT), this.#addPoint, this.#resetAllPoints);
       this.#newEventBtn.disabled = false;
     }
   };

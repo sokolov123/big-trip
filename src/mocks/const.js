@@ -1,5 +1,17 @@
 import { getRandomInteger } from '../utils/util';
 
+const FilterTypes = {
+  EVERYTHING: 'everything',
+  PAST: 'past',
+  FUTURE: 'future'
+};
+
+const UpdateTypes = {
+  PATCH: 'PATCH',
+  MINOR: 'MINOR',
+  MAJOR: 'MAJOR',
+};
+
 const eventTypes = {
   TAXI: 'taxi',
   BUS: 'bus',
@@ -136,7 +148,7 @@ const offersByEventType = [
       },
       {
         id: 2,
-        title: 'Upgrade+',
+        title: 'Upgrade',
         price: 50,
       }
     ]
@@ -146,7 +158,7 @@ const offersByEventType = [
     offers: [
       {
         id: 1,
-        title: 'Upgrade+',
+        title: 'Upgrade',
         price: 60,
       },
       {
@@ -205,7 +217,7 @@ const offersByEventType = [
         price: 300,
       },
       {
-        id: 1,
+        id: 2,
         title: 'Dinners',
         price: 400,
       }
@@ -219,8 +231,8 @@ const PRIMARY_POINT = {
   dateFrom: '2023-01-01T00:00:56.845Z',
   dateTo: '2023-01-01T01:00:13.375Z',
   destination: destinations[0],
-  offers: offersByEventType.find((obj) => obj.type === eventTypes.FLIGHT).offers,
+  offers: offersByEventType.find((obj) => obj.type === eventTypes.FLIGHT).offers.map((offer) => offer.id),
   type: eventTypes.FLIGHT,
 };
 
-export {eventTypes, offersByEventType, destinations, PRIMARY_POINT};
+export {eventTypes, offersByEventType, destinations, PRIMARY_POINT, FilterTypes, UpdateTypes};

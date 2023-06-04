@@ -14,9 +14,10 @@ export default class PointsModel extends Observable {
     return this.#points;
   }
 
-  set points(points) {
-    this.#points = points;
-  }
+  addPoint = (point) => {
+    this.#points.push(point);
+  };
+
 
   //updatePoint = (update, data) => {
 

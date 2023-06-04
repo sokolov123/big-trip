@@ -16,10 +16,11 @@ export default class PointPresenter {
   #mode = PointMode.DEFAULT;
   _callback = {};
 
-  constructor(container, beforeEdit, onDelete) {
+  constructor(container, beforeEdit, onDelete, onSubmit) {
     this.#container = container;
     this._callback.beforeEdit = beforeEdit;
     this._callback.onDelete = onDelete;
+    this._callback.onSubmit = onSubmit;
   }
 
   get point() {
@@ -43,11 +44,12 @@ export default class PointPresenter {
     });
 
     this.#editPoint.setFormSubmitHandler(() => {
-      this.#replaceEditToPoint(this.#eventPoint, this.#editPoint);
+      this._callback.onSubmit(this.#eventPoint);
+      this.destroy();
     });
 
     this.#editPoint.setDeleteHandler(() => {
-      this._callback.onDelete(this);
+      this._callback.onDelete(this.point);
       this.destroy();
     });
 

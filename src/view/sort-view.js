@@ -32,7 +32,7 @@ const createTripSortTemplate = (mode) => (
 
 export default class SortView extends AbstractView {
 
-  #mode = null;
+  #mode = SortModes.DAY;
 
   constructor(mode) {
     super();

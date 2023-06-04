@@ -1,23 +1,24 @@
 import AbstractView from '../framework/view/abstract-view';
-import { filterTypes } from './filters-view';
+import { FilterTypes } from '../mocks/const';
 
 const messageByFilterType = {
   EVERYTHING: 'Click New Event to create your first point',
-  // PAST: 'There are no past events now',
+  PAST: 'There are no past events now',
   FUTURE: 'There are no future events now'
 };
 
 const createEmptyListTemplate = (filter) => {
   let message = '';
   switch (filter) {
-    case filterTypes.EVERYTHING: {
+    case FilterTypes.EVERYTHING:
       message = messageByFilterType.EVERYTHING;
       break;
-    }
-    case filterTypes.FUTURE: {
-      message = messageByFilterType.EVERYTHING;
+    case FilterTypes.FUTURE:
+      message = messageByFilterType.FUTURE;
       break;
-    }
+    case FilterTypes.PAST:
+      message = messageByFilterType.PAST;
+      break;
   }
   return (
     `<section class="trip-events">
@@ -36,7 +37,7 @@ const createEmptyListTemplate = (filter) => {
 
 export default class EmptyListView extends AbstractView {
 
-  #filter = filterTypes.EVERYTHING;
+  #filter = null;
 
   constructor(filter) {
     super();
@@ -47,21 +48,7 @@ export default class EmptyListView extends AbstractView {
     return this.#filter;
   }
 
-  set filter(filter) {
-    this.#filter = filter;
-  }
-
   get template() {
     return createEmptyListTemplate(this.#filter);
   }
-
-  setClickHandler = (callback) => {
-    this._callback.click = callback;
-    this.element.addEventListener('click', this.#clickHandler);
-  };
-
-  #clickHandler = (evt) => {
-    evt.preventDefault();
-    this._callback.click();
-  };
 }
