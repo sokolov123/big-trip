@@ -12,6 +12,7 @@ import { sortByDay, sortByEvent, sortByOffers, sortByPrice, sortByTime, firstSor
 export default class EventsPresenter {
 
   #eventsUlistView = new EventsUlistView();
+  #emptyListView = new EmptyListView(filterTypes.EVERYTHING);
   #newEventBtn = document.querySelector('.trip-main__event-add-btn');
   #pointPresenters = [];
   #eventCreator = null;
@@ -35,19 +36,23 @@ export default class EventsPresenter {
       this.#eventCreator = new EventCreatorView(PRIMARY_POINT);
       render(this.#eventCreator, this.#eventsUlistView.element);
       this.#renderPoints();
+      remove(this.#emptyListView);
     });
+
+    for (let i = 0; i < this.eventPoints.length; i++) {
+      const pointPresenter = new PointPresenter(this.#eventsUlistView, this.#resetAllPoints, this.#deletePoint);
+      this.#pointPresenters[i] = pointPresenter;
+    }
 
     this.#renderPoints();
   };
 
   #renderPoints = () => {
-    if (this.eventPoints.length === 0) {
-      render(new EmptyListView(filterTypes.EVERYTHING), this.#eventsUlistView.element);
+    if (this.#pointPresenters.length === 0) {
+      render(this.#emptyListView, this.#eventsUlistView.element);
     } else {
-      for (let i = 0; i < this.eventPoints.length; i++) {
-        const pointPresenter = new PointPresenter(this.#eventsUlistView, this.#resetAllPoints, this.#deletePoint);
-        pointPresenter.init(this.eventPoints[i]);
-        this.#pointPresenters[i] = pointPresenter;
+      for (let i = 0; i < this.#pointPresenters.length; i++) {
+        this.#pointPresenters[i].init(this.eventPoints[i]);
       }
     }
   };
@@ -55,6 +60,9 @@ export default class EventsPresenter {
   #deletePoint = (toDelete) => {
     const index = this.#pointPresenters.indexOf(toDelete);
     this.#pointPresenters.splice(index, 1);
+    if (this.#pointPresenters.length === 0) {
+      render(this.#emptyListView, this.#eventsUlistView.element);
+    }
   };
 
   #clearAllPoints = () => {
