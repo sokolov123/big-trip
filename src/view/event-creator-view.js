@@ -139,6 +139,7 @@ export default class EventCreatorView extends AbstractStatefulView {
       evt.preventDefault();
       document.removeEventListener('keydown', this.#onEscKeyDown);
       remove(this);
+      document.querySelector('.trip-main__event-add-btn').disabled = false;
     });
   };
 

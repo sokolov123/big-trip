@@ -2,7 +2,7 @@ import SortView from '../view/sort-view.js';
 import { SortModes } from '../view/sort-view.js';
 import EventCreatorView from '../view/event-creator-view.js';
 import EventsUlistView from '../view/events-ulist-view.js';
-import { render } from '../framework/render.js';
+import { render, remove } from '../framework/render.js';
 import EmptyListView from '../view/empty-list-view.js';
 import { filterTypes } from '../view/filters-view.js';
 import PointPresenter from './point-presenter.js';
@@ -12,7 +12,9 @@ import { sortByDay, sortByEvent, sortByOffers, sortByPrice, sortByTime, firstSor
 export default class EventsPresenter {
 
   #eventsUlistView = new EventsUlistView();
+  #newEventBtn = document.querySelector('.trip-main__event-add-btn');
   #pointPresenters = [];
+  #eventCreator = null;
 
   get pointPresenters() {
     return this.#pointPresenters;
@@ -27,9 +29,11 @@ export default class EventsPresenter {
     this.eventOffers = [...pointsModel.getOffers()];
     render(new SortView(this.#sort), this.eventsContainer);
     render(this.#eventsUlistView, this.eventsContainer);
-    document.querySelector('.trip-main__event-add-btn').addEventListener('click', () => {
+    this.#newEventBtn.addEventListener('click', (evt) => {
+      evt.target.disabled = true;
       this.#clearAllPoints();
-      render(new EventCreatorView(PRIMARY_POINT), this.#eventsUlistView.element);
+      this.#eventCreator = new EventCreatorView(PRIMARY_POINT);
+      render(this.#eventCreator, this.#eventsUlistView.element);
       this.#renderPoints();
     });
 
@@ -59,6 +63,11 @@ export default class EventsPresenter {
 
   #resetAllPoints = () => {
     this.#pointPresenters.forEach((pp) => pp.resetView());
+    if (this.#eventCreator !== null) {
+      remove(this.#eventCreator);
+      this.#eventCreator = null;
+      this.#newEventBtn.disabled = false;
+    }
   };
 
   #sort = (mode) => {
