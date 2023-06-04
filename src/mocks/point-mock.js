@@ -30,8 +30,8 @@ export const generatePoint = () => {
   return ({
     id: getRandomInteger(1, 100),
     basePrice: getRandomInteger(100, 2000),
-    dateFrom: `2023-01-${dayFrom}T${hourFrom}:${getRandomInteger(10, 50)}:56.845Z`,
-    dateTo: `2023-01-${dayTo}T${hourTo}:${getRandomInteger(30, 55)}:13.375Z`,
+    dateFrom: `2023-06-${dayFrom}T${hourFrom}:${getRandomInteger(10, 50)}:56.845Z`,
+    dateTo: `2023-06-${dayTo}T${hourTo}:${getRandomInteger(30, 55)}:13.375Z`,
     destination: destinations[getRandomInteger(0, destinations.length - 1)],
     offers: getRandomOffersIds(type),
     type,

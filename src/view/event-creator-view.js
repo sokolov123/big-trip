@@ -3,12 +3,13 @@ import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import { destinations } from '../mocks/const.js';
 import { createTypesTemplate, createDestinations, createOffersTemplate } from './event-editor-view.js';
 import { capitalizeFirstLetter, separateDate } from '../utils/util.js';
+import he from 'he';
 import flatpickr from 'flatpickr';
 
 import 'flatpickr/dist/flatpickr.min.css';
 
 const createEventTemplate = (point) => {
-  const {dateFrom, dateTo, destination, offers, type} = point;
+  const { basePrice, dateFrom, dateTo, destination, offers, type} = point;
   return (
     `<form class="event event--edit" action="#" method="post">
     <header class="event__header">
@@ -29,10 +30,10 @@ const createEventTemplate = (point) => {
 
       <div class="event__field-group  event__field-group--destination">
         <label class="event__label  event__type-output" for="event-destination-1">
-          ${capitalizeFirstLetter(type)}
+          ${he.encode(String(capitalizeFirstLetter(type)))}
         </label>
         <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value=${destination.name} list="destination-list-1" autocomplete="off">
-          ${createDestinations(destinations)}
+          ${createDestinations()}
       </div>
 
       <div class="event__field-group  event__field-group--time">
@@ -48,7 +49,7 @@ const createEventTemplate = (point) => {
           <span class="visually-hidden">Price</span>
           &euro;
         </label>
-        <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="" autocomplete="off">
+        <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${he.encode(String(basePrice))}" autocomplete="off">
       </div>
 
       <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -84,13 +85,19 @@ export default class EventCreatorView extends AbstractStatefulView {
 
   #datepicker = null;
 
-  constructor(point) {
+  constructor(point, onSubmit, onDelete) {
     super();
 
     this._state = point;
+    this._callback.formSubmit = onSubmit;
+    this._callback.formDelete = onDelete;
+
     this.#setInnerHandlers();
+    this.setFormSubmitHandler();
+    this.setCancelHandler();
     this.#setDatepickers();
   }
+
 
   removeElement = () => {
     super.removeElement();
@@ -107,13 +114,26 @@ export default class EventCreatorView extends AbstractStatefulView {
 
   _restoreHandlers() {
     this.#setInnerHandlers();
-    this.setFormSubmitHandler(this._callback.formSubmit);
+    this.setFormSubmitHandler();
+    this.setCancelHandler();
     this.#setDatepickers();
   }
 
-  setFormSubmitHandler = (callback) => {
-    this._callback.formSubmit = callback;
-    this.element.addEventListener('submit', this.#formSubmitHandler);
+  setFormSubmitHandler = () => {
+    this.element.addEventListener('submit', (evt) => {
+      evt.preventDefault();
+      document.removeEventListener('keydown', this.#onEscKeyDown);
+      this._callback.formSubmit(this._state);
+    });
+  };
+
+  setCancelHandler = () => {
+    this.element.addEventListener('reset', (evt) => {
+      evt.preventDefault();
+      document.removeEventListener('keydown', this.#onEscKeyDown);
+      document.querySelector('.trip-main__event-add-btn').disabled = false;
+      this._callback.formDelete();
+    });
   };
 
   #setInnerHandlers = () => {
@@ -134,18 +154,19 @@ export default class EventCreatorView extends AbstractStatefulView {
     // Esc
     this.element.addEventListener('keydown', this.#onEscKeyDown);
 
-    // Cancel
-    this.element.addEventListener('reset', (evt) => {
+    // Price
+    const priceInput = this.element.querySelector('.event__input--price');
+    priceInput.addEventListener('change', (evt) => {
       evt.preventDefault();
-      document.removeEventListener('keydown', this.#onEscKeyDown);
-      remove(this);
+      this._state.basePrice = evt.target.value;
     });
-  };
 
-  #formSubmitHandler = (evt) => {
-    evt.preventDefault();
-    document.removeEventListener('keydown', this.#onEscKeyDown);
-    this._callback.formSubmit();
+    // Offers
+    const offersCheckbox = this.element.querySelectorAll('.event__offer-checkbox');
+    offersCheckbox.forEach((btn) => btn.addEventListener('change', () => {
+      const newOffers = Array.from(offersCheckbox).filter((i) => i.checked).map((i) => i.value);
+      this.updateElement({ offer: newOffers });
+    }));
   };
 
   #onEscKeyDown = (evt) => {

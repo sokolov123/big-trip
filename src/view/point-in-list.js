@@ -1,4 +1,4 @@
-import AbstractView from '../framework/view/abstract-view.js';
+import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import { offersByEventType } from '../mocks/const.js';
 import { dateToString, timeToString } from '../utils/util.js';
 
@@ -17,8 +17,8 @@ const createOfferTemplate = (offers, type) => {
     const offer = currentOffersByType.find((o) => o.id === offers[i]);
     newOfferElement.insertAdjacentHTML('beforeend', `
       <span class="event__offer-title">${offer.title}</span>
-        &plus;&euro;&nbsp;
-      <span class="event__offer-price">${offer.price}</span>
+        &plus;
+      <span class="event__offer-price">${offer.price}</span>&euro;&nbsp;
     `);
     newOffersContainer.appendChild(newOfferElement);
   }
@@ -41,7 +41,7 @@ const createPointInListTemplate = (point) => {
       </p>
     </div>
     <p class="event__price">
-      &euro;&nbsp;<span class="event__price-value">${basePrice}</span>
+      <span class="event__price-value">${basePrice}</span>&euro;&nbsp;
     </p>
     <h4 class="visually-hidden">Offers:</h4>
     <ul class="event__selected-offers">
@@ -53,18 +53,18 @@ const createPointInListTemplate = (point) => {
   </div>`);
 };
 
-export default class PointInListView extends AbstractView {
-
-  #point = null;
+export default class PointInListView extends AbstractStatefulView {
 
   constructor(point) {
     super();
-    this.#point = point;
+    this._state = point;
   }
 
   get template() {
-    return createPointInListTemplate(this.#point);
+    return createPointInListTemplate(this._state);
   }
+
+  getState = () => this._state;
 
   get rollupButton() {
     return this.element.querySelector('.event__rollup-btn');
