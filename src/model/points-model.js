@@ -1,10 +1,26 @@
 import { destinations, offersByEventType } from '../mocks/const.js';
-import { generatePoint } from '../mocks/point-mock.js';
+import Observable from '../framework/observable.js';
 
-export default class PointsModel {
+export default class PointsModel extends Observable {
 
-  points = Array.from({length: 10}, generatePoint);
-  getPoints = () => this.points;
+  #points = [];
+
+  constructor(points) {
+    super();
+    this.#points = points;
+  }
+
+  get points() {
+    return this.#points;
+  }
+
+  set points(points) {
+    this.#points = points;
+  }
+
+  //updatePoint = (update, data) => {
+
+  //};
 
   getDestinations = () => destinations;
   getOffers = () => offersByEventType;

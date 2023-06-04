@@ -84,7 +84,7 @@ export default class EventCreatorView extends AbstractStatefulView {
 
   #datepicker = null;
 
-  constructor(point) {
+  constructor(point, onCancel) {
     super();
 
     this._state = point;
@@ -108,6 +108,7 @@ export default class EventCreatorView extends AbstractStatefulView {
   _restoreHandlers() {
     this.#setInnerHandlers();
     this.setFormSubmitHandler(this._callback.formSubmit);
+    this.setCancelHandler(this._callback.formCancel)
     this.#setDatepickers();
   }
 
@@ -133,15 +134,15 @@ export default class EventCreatorView extends AbstractStatefulView {
 
     // Esc
     this.element.addEventListener('keydown', this.#onEscKeyDown);
-
-    // Cancel
-    this.element.addEventListener('reset', (evt) => {
-      evt.preventDefault();
-      document.removeEventListener('keydown', this.#onEscKeyDown);
-      remove(this);
-      document.querySelector('.trip-main__event-add-btn').disabled = false;
-    });
   };
+
+  // Cancel
+  this.element.addEventListener('reset', (evt) => {
+    evt.preventDefault();
+    document.removeEventListener('keydown', this.#onEscKeyDown);
+    remove(this);
+    document.querySelector('.trip-main__event-add-btn').disabled = false;
+  });
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();

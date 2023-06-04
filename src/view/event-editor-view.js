@@ -8,8 +8,7 @@ import 'flatpickr/dist/flatpickr.min.css';
 const createOffersTemplate = (offers, type) => {
   const currentOffersByType = offersByEventType.find((o) => o.type === type).offers;
   const offersContainer = document.createElement('section');
-  offersContainer.classList.add('event__section');
-  offersContainer.classList.add('event__section--offers');
+  offersContainer.classList.add('event__section', 'event__section--offers');
   for (let i = 0; i < currentOffersByType.length; i++) {
     const newOfferElement = document.createElement('div');
     newOfferElement.classList.add('event__offer-selector');
