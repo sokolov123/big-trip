@@ -3,6 +3,9 @@ import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import { destinations } from '../mocks/const.js';
 import { createTypesTemplate, createDestinations, createOffersTemplate } from './event-editor-view.js';
 import { capitalizeFirstLetter, separateDate } from '../utils/util.js';
+import flatpickr from 'flatpickr';
+
+import 'flatpickr/dist/flatpickr.min.css';
 
 const createEventTemplate = (point) => {
   const {dateFrom, dateTo, destination, offers, type} = point;
@@ -28,7 +31,7 @@ const createEventTemplate = (point) => {
         <label class="event__label  event__type-output" for="event-destination-1">
           ${capitalizeFirstLetter(type)}
         </label>
-        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="Kazan" list="destination-list-1" autocomplete="off">
+        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value=${destination.name} list="destination-list-1" autocomplete="off">
           ${createDestinations(destinations)}
       </div>
 
@@ -79,13 +82,24 @@ const createEventTemplate = (point) => {
 
 export default class EventCreatorView extends AbstractStatefulView {
 
+  #datepicker = null;
+
   constructor(point) {
     super();
 
     this._state = point;
     this.#setInnerHandlers();
-    this.#cancelClickHandler();
+    this.#setDatepickers();
   }
+
+  removeElement = () => {
+    super.removeElement();
+
+    if (this.#datepicker) {
+      this.#datepicker.destroy();
+      this.#datepicker = null;
+    }
+  };
 
   get template() {
     return createEventTemplate(this._state);
@@ -94,6 +108,7 @@ export default class EventCreatorView extends AbstractStatefulView {
   _restoreHandlers() {
     this.#setInnerHandlers();
     this.setFormSubmitHandler(this._callback.formSubmit);
+    this.#setDatepickers();
   }
 
   setFormSubmitHandler = (callback) => {
@@ -102,23 +117,24 @@ export default class EventCreatorView extends AbstractStatefulView {
   };
 
   #setInnerHandlers = () => {
+
+    // Type
     const radioTypeBtns = this.element.querySelectorAll('.event__type-input');
     radioTypeBtns.forEach((btn) => btn.addEventListener('input', (evt) => {
-      this._state.type = evt.target.value;
-      this.updateElement(this._state);
+      this.updateElement({ type: evt.target.value });
     }));
 
+    // Destination
     const destinationBtn = this.element.querySelector('.event__input--destination');
     destinationBtn.addEventListener('change', (evt) => {
-      this._state.destination = destinations.find((obj) => obj.name === evt.target.value);
-      this.updateElement(this._state);
+      const newDestination = destinations.find((obj) => obj.name === evt.target.value);
+      this.updateElement({ destination: newDestination });
     });
 
+    // Esc
     this.element.addEventListener('keydown', this.#onEscKeyDown);
-  };
 
-
-  #cancelClickHandler = () => {
+    // Cancel
     this.element.addEventListener('reset', (evt) => {
       evt.preventDefault();
       document.removeEventListener('keydown', this.#onEscKeyDown);
@@ -138,4 +154,46 @@ export default class EventCreatorView extends AbstractStatefulView {
       remove(this);
     }
   };
+
+  #setDatepickers = () => {
+    this.#setFromDatepicker();
+    this.#setToDatepicker();
+  };
+
+  #dateFromChangeHandler = ([userDate]) => {
+    this.updateElement({
+      dateFrom: userDate,
+    });
+  };
+
+  #setFromDatepicker = () => {
+    this.#datepicker = flatpickr(
+      this.element.querySelector('#event-start-time-1'),
+      {
+        enableTime: true,
+        dateFormat: 'd/m/y H:i',
+        defaultDate: this._state.dateFrom,
+        onChange: this.#dateFromChangeHandler,
+      },
+    );
+  };
+
+  #dateToChangeHandler = ([userDate]) => {
+    this.updateElement({
+      dateTo: userDate,
+    });
+  };
+
+  #setToDatepicker = () => {
+    this.#datepicker = flatpickr(
+      this.element.querySelector('#event-end-time-1'),
+      {
+        enableTime: true,
+        dateFormat: 'd/m/y H:i',
+        defaultDate: this._state.dateTo,
+        onChange: this.#dateToChangeHandler,
+      },
+    );
+  };
 }
+

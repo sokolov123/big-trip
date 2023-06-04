@@ -43,6 +43,7 @@
   },
   "homepage": "https://github.com/sokolov123/big-trip#readme",
   "dependencies": {
-    "dayjs": "^1.11.7"
+    "dayjs": "^1.11.7",
+    "flatpickr": "4.6.13"
   }
 }
