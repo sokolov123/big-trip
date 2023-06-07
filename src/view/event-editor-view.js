@@ -1,5 +1,5 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
-import { eventTypes } from '../mocks/const.js';
+import { eventTypes } from '../const.js';
 import { separateDate, capitalizeFirstLetter, getOffersByType } from '../utils/util.js';
 import he from 'he';
 import flatpickr from 'flatpickr';
@@ -9,17 +9,17 @@ import 'flatpickr/dist/flatpickr.min.css';
 const createOffersTemplate = (currentOffers, offers) => {
   const offersContainer = document.createElement('section');
   offersContainer.classList.add('event__section', 'event__section--offers');
-  for (let i = 0; i < offers.length; i++) {
+  for (const offer of offers) {
     const newOfferElement = document.createElement('div');
     newOfferElement.classList.add('event__offer-selector');
-    const isIncludes = (currentOffers.filter((obj) => obj === offers[i].id).length > 0);
+    const isIncludes = (currentOffers.filter((obj) => obj === offer.id).length > 0);
     newOfferElement.insertAdjacentHTML('beforeend', `
-      <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offers[i].title.toLowerCase()}-1" type="checkbox"
-      name="event-offer-${offers[i].title.toLowerCase()}" value=${offers[i].id} ${isIncludes ? 'checked' : ''}>
-      <label class="event__offer-label" for="event-offer-${offers[i].title.toLowerCase()}-1">
-        <span class="event__offer-title">${offers[i].title}</span>
+      <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.title.toLowerCase()}-1" type="checkbox"
+      name="event-offer-${offer.title.toLowerCase()}" value=${offer.id} ${isIncludes ? 'checked' : ''}>
+      <label class="event__offer-label" for="event-offer-${offer.title.toLowerCase()}-1">
+        <span class="event__offer-title">${offer.title}</span>
         &plus;&euro;&nbsp;
-        <span class="event__offer-price">${offers[i].price}</span>
+        <span class="event__offer-price">${offer.price}</span>
       </label>
     `);
     offersContainer.appendChild(newOfferElement);
@@ -31,24 +31,24 @@ const createDestinations = (destinations) => {
   const container = document.createElement('div');
   const datalist = document.createElement('datalist');
   datalist.setAttribute('id', 'destination-list-1');
-  for (let i = 0; i < destinations.length; i++) {
+  for (const destination of destinations) {
     const option = document.createElement('option');
-    option.setAttribute('value', destinations[i].name);
+    option.setAttribute('value', destination.name);
     datalist.appendChild(option);
   }
   container.appendChild(datalist);
   return container.innerHTML;
 };
 
-const createTypesTemplate = (type) => {
+const createTypesTemplate = (currentType) => {
   const container = document.createElement('div');
   const types = Object.values(eventTypes);
-  for (let i = 0; i < types.length; i++) {
+  for (const type of types) {
     const typeElement = document.createElement('div');
     typeElement.classList.add('event__type-item');
     typeElement.insertAdjacentHTML('beforeend', `
-    <input id="event-type-${types[i]}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value=${types[i]} ${type === types[i] ? 'checked' : ''}>
-    <label class="event__type-label  event__type-label--${types[i]}" for="event-type-${types[i]}-1">${capitalizeFirstLetter(types[i])}</label>
+    <input id="event-type-${type}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value=${type} ${currentType === type ? 'checked' : ''}>
+    <label class="event__type-label  event__type-label--${type}" for="event-type-${type}-1">${capitalizeFirstLetter(type)}</label>
     `);
     container.appendChild(typeElement);
   }
@@ -57,9 +57,9 @@ const createTypesTemplate = (type) => {
 
 const createPicturesTemplate = (destination) => {
   const container = document.createElement('div');
-  for (let i = 0; i < destination.pictures.length; i++) {
+  for (const picture of destination.pictures) {
     container.insertAdjacentHTML('beforeend',
-      `<img class="event__photo" src=${destination.pictures[i].src} alt="${destination.pictures[i].description}"></img>`);
+      `<img class="event__photo" src=${picture.src} alt="${picture.description}"></img>`);
   }
   return container.innerHTML;
 };

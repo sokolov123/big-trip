@@ -1,5 +1,5 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import { FilterTypes } from '../mocks/const.js';
+import { FilterTypes } from '../const.js';
 
 const createTripFiltersTemplate = (currentFilter) => (
   `<form class="trip-filters" action="#" method="get">

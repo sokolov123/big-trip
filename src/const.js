@@ -1,4 +1,4 @@
-import { getRandomInteger } from '../utils/util';
+import { getRandomInteger } from './utils/util';
 
 const FilterTypes = {
   EVERYTHING: 'everything',

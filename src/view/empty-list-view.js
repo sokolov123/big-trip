@@ -1,5 +1,5 @@
 import AbstractView from '../framework/view/abstract-view';
-import { FilterTypes } from '../mocks/const';
+import { FilterTypes } from '../const';
 
 const messageByFilterType = {
   EVERYTHING: 'Click New Event to create your first point',

@@ -9,13 +9,13 @@ const createOfferTemplate = (currentOffersIDs, offers) => {
       </li>`);
   }
   const newOffersContainer = document.createElement('div');
-  for (let i = 0; i < currentOffersIDs.length; i++) {
+  for (const id of currentOffersIDs) {
     const newOfferElement = document.createElement('li');
     newOfferElement.classList.add('event__offer');
     newOfferElement.insertAdjacentHTML('beforeend', `
-      <span class="event__offer-title">${offers.find((offer) => offer.id === parseInt(currentOffersIDs[i], 10)).title}</span>
+      <span class="event__offer-title">${offers.find((offer) => offer.id === parseInt(id, 10)).title}</span>
         &plus;
-      <span class="event__offer-price">${offers.find((offer) => offer.id === parseInt(currentOffersIDs[i], 10)).price}</span>&euro;&nbsp;
+      <span class="event__offer-price">${offers.find((offer) => offer.id === parseInt(id, 10)).price}</span>&euro;&nbsp;
     `);
     newOffersContainer.appendChild(newOfferElement);
   }

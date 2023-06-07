@@ -1,5 +1,4 @@
 import { render, replace, remove } from '../framework/render';
-// import { UpdateTypes, UserActions } from '../mocks/const';
 import EventEditorView from '../view/event-editor-view';
 import PointInListView from '../view/point-in-list';
 
