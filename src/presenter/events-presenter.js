@@ -45,7 +45,7 @@ export default class EventsPresenter {
       case SortModes.DAY:
         return sortByDay(filteredPoints);
       case SortModes.EVENT:
-        return sortByEvent(filteredPoints);
+        return sortByEvent(filteredPoints, this.#pointsModel.destinations);
       case SortModes.TIME:
         return sortByTime(filteredPoints);
       case SortModes.PRICE:
@@ -59,16 +59,19 @@ export default class EventsPresenter {
   init = () => {
     this.#renderSort();
     render(this.#eventsUlistView, this.#eventsContainer);
+    this.#renderPoints();
     this.#newEventBtn.addEventListener('click', (evt) => {
-      this.#eventCreator = new EventCreatorView(structuredClone(PRIMARY_POINT), this.#addPoint, this.#resetAllPoints);
+      this.#eventCreator = new EventCreatorView(structuredClone(PRIMARY_POINT),
+        this.#addPoint,
+        this.#resetAllPoints,
+        this.#pointsModel.destinations,
+        this.#pointsModel.offers);
       evt.target.disabled = true;
       this.#clearAllPoints();
       render(this.#eventCreator, this.#eventsUlistView.element);
       this.#renderPoints();
       remove(this.#emptyListView);
     });
-
-    this.#renderPoints();
   };
 
   #handleSortModeChange = (sortMode) => {
@@ -92,8 +95,10 @@ export default class EventsPresenter {
         break;
       case UpdateTypes.MAJOR: {
         this.#currentSortMode = SortModes.DAY;
+        remove(this.#emptyListView);
         const prevSortView = this.#sortView;
         this.#sortView = new SortView(this.#currentSortMode);
+        this.#emptyListView = new EmptyListView(this.#filtersModel.filter);
         this.#sortView.setSortModeChangeHandler(this.#handleSortModeChange);
         replace(this.#sortView, prevSortView);
         this.#clearAllPoints();
@@ -114,7 +119,9 @@ export default class EventsPresenter {
     const pointPresenter = new PointPresenter(this.#eventsUlistView,
       this.#resetAllPoints,
       this.#deletePoint,
-      this.#editPoint);
+      this.#editPoint,
+      this.#pointsModel.destinations,
+      this.#pointsModel.offers);
     this.#pointPresenters.push(pointPresenter);
     pointPresenter.init(point);
   };
@@ -135,7 +142,11 @@ export default class EventsPresenter {
     this.#pointsModel.addPoint(point);
     this.#filtersModel.setFilter(UpdateTypes.MAJOR, FilterTypes.EVERYTHING);
     remove(this.#eventCreator);
-    this.#eventCreator = new EventCreatorView(structuredClone(PRIMARY_POINT), this.#addPoint, this.#resetAllPoints);
+    this.#eventCreator = new EventCreatorView(structuredClone(PRIMARY_POINT),
+      this.#addPoint,
+      this.#resetAllPoints,
+      this.#pointsModel.destinations,
+      this.#pointsModel.offers);
     this.#newEventBtn.disabled = false;
   };
 
@@ -162,7 +173,11 @@ export default class EventsPresenter {
     this.#pointPresenters.forEach((pp) => pp.resetView());
     if (this.#eventCreator !== null) {
       remove(this.#eventCreator);
-      this.#eventCreator = new EventCreatorView(structuredClone(PRIMARY_POINT), this.#addPoint, this.#resetAllPoints);
+      this.#eventCreator = new EventCreatorView(structuredClone(PRIMARY_POINT),
+        this.#addPoint,
+        this.#resetAllPoints,
+        this.#pointsModel.destinations,
+        this.#pointsModel.offers);
       this.#newEventBtn.disabled = false;
     }
   };

@@ -1,15 +1,16 @@
 import { remove } from '../framework/render.js';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
-import { destinations } from '../mocks/const.js';
-import { createTypesTemplate, createDestinations, createOffersTemplate } from './event-editor-view.js';
-import { capitalizeFirstLetter, separateDate } from '../utils/util.js';
+import { createTypesTemplate, createDestinations, createOffersTemplate, createPicturesTemplate } from './event-editor-view.js';
+import { capitalizeFirstLetter, separateDate, getOffersByType } from '../utils/util.js';
 import he from 'he';
 import flatpickr from 'flatpickr';
 
 import 'flatpickr/dist/flatpickr.min.css';
 
-const createEventTemplate = (point) => {
-  const { basePrice, dateFrom, dateTo, destination, offers, type} = point;
+const createEventTemplate = (point, destinations, offers) => {
+  const { basePrice, dateFrom, dateTo, destination, type} = point;
+  const destinationObj = destinations.find((obj) => obj.id === destination);
+  const currentOffers = point.offers;
   return (
     `<form class="event event--edit" action="#" method="post">
     <header class="event__header">
@@ -32,8 +33,8 @@ const createEventTemplate = (point) => {
         <label class="event__label  event__type-output" for="event-destination-1">
           ${he.encode(String(capitalizeFirstLetter(type)))}
         </label>
-        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value=${destination.name} list="destination-list-1" autocomplete="off">
-          ${createDestinations()}
+        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destinationObj.name}" list="destination-list-1" autocomplete="off" required>
+          ${createDestinations(destinations)}
       </div>
 
       <div class="event__field-group  event__field-group--time">
@@ -49,7 +50,7 @@ const createEventTemplate = (point) => {
           <span class="visually-hidden">Price</span>
           &euro;
         </label>
-        <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${he.encode(String(basePrice))}" autocomplete="off">
+        <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${he.encode(String(basePrice))}" autocomplete="off" required>
       </div>
 
       <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -60,18 +61,17 @@ const createEventTemplate = (point) => {
         <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
         <div class="event__available-offers">
-          ${createOffersTemplate(offers, type)}
+          ${createOffersTemplate(currentOffers, getOffersByType(type, offers))}
         </div>
       </section>
 
       <section class="event__section  event__section--destination">
         <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-        <p class="event__destination-description">${destination.description}</p>
+        <p class="event__destination-description">${destinationObj.description}</p>
 
         <div class="event__photos-container">
           <div class="event__photos-tape">
-            <img class="event__photo" src=${destination.pictures[0].src} alt="Event photo">
-            <img class="event__photo" src=${destination.pictures[1].src} alt="Event photo">
+            ${createPicturesTemplate(destinationObj)}
           </div>
         </div>
         </div>
@@ -84,13 +84,17 @@ const createEventTemplate = (point) => {
 export default class EventCreatorView extends AbstractStatefulView {
 
   #datepicker = null;
+  #destinations = null;
+  #offers = null;
 
-  constructor(point, onSubmit, onDelete) {
+  constructor(point, onSubmit, onDelete, destinations, offers) {
     super();
 
     this._state = point;
     this._callback.formSubmit = onSubmit;
     this._callback.formDelete = onDelete;
+    this.#destinations = destinations;
+    this.#offers = offers;
 
     this.#setInnerHandlers();
     this.setFormSubmitHandler();
@@ -109,7 +113,7 @@ export default class EventCreatorView extends AbstractStatefulView {
   };
 
   get template() {
-    return createEventTemplate(this._state);
+    return createEventTemplate(this._state, this.#destinations, this.#offers);
   }
 
   _restoreHandlers() {
@@ -123,6 +127,9 @@ export default class EventCreatorView extends AbstractStatefulView {
     this.element.addEventListener('submit', (evt) => {
       evt.preventDefault();
       document.removeEventListener('keydown', this.#onEscKeyDown);
+      const offersCheckbox = this.element.querySelectorAll('.event__offer-checkbox');
+      const newOffers = Array.from(offersCheckbox).filter((i) => i.checked).map((i) => i.value);
+      this._state.offers = newOffers;
       this._callback.formSubmit(this._state);
     });
   };
@@ -141,14 +148,15 @@ export default class EventCreatorView extends AbstractStatefulView {
     // Type
     const radioTypeBtns = this.element.querySelectorAll('.event__type-input');
     radioTypeBtns.forEach((btn) => btn.addEventListener('input', (evt) => {
-      this.updateElement({ type: evt.target.value });
+      this.updateElement({ offers: getOffersByType(evt.target.value, this.#offers),
+        type: evt.target.value });
     }));
 
     // Destination
     const destinationBtn = this.element.querySelector('.event__input--destination');
     destinationBtn.addEventListener('change', (evt) => {
-      const newDestination = destinations.find((obj) => obj.name === evt.target.value);
-      this.updateElement({ destination: newDestination });
+      const newDestination = this.#destinations.find((obj) => obj.name === evt.target.value);
+      this.updateElement({ destination: newDestination.id });
     });
 
     // Esc
@@ -160,13 +168,6 @@ export default class EventCreatorView extends AbstractStatefulView {
       evt.preventDefault();
       this._state.basePrice = evt.target.value;
     });
-
-    // Offers
-    const offersCheckbox = this.element.querySelectorAll('.event__offer-checkbox');
-    offersCheckbox.forEach((btn) => btn.addEventListener('change', () => {
-      const newOffers = Array.from(offersCheckbox).filter((i) => i.checked).map((i) => i.value);
-      this.updateElement({ offer: newOffers });
-    }));
   };
 
   #onEscKeyDown = (evt) => {
