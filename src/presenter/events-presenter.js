@@ -6,7 +6,7 @@ import { render, remove, replace } from '../framework/render.js';
 import EmptyListView from '../view/empty-list-view.js';
 import { FilterTypes, UpdateTypes } from '../mocks/const.js';
 import PointPresenter from './point-presenter.js';
-import { PRIMARY_POINT } from '../mocks/const.js';
+import { PRIMARY_POINT, UserActions } from '../mocks/const.js';
 import { sortByDay, sortByEvent, sortByOffers, sortByPrice, sortByTime } from '../utils/sorts.js';
 import { filter } from '../utils/filter.js';
 
@@ -84,6 +84,36 @@ export default class EventsPresenter {
     this.#renderPoints();
   };
 
+  #handleViewAction = async (actionType, updateType, update) => {
+
+    switch (actionType) {
+      case UserActions.UPDATE_POINT:
+        this.#pointPresenters.find((pp) => pp.point.id === update.id).setSaving();
+        try {
+          await this.#pointsModel.updatePoint(updateType, update);
+        } catch(err) {
+          this.#pointPresenters.find((pp) => pp.point.id === update.id).setAborting();
+        }
+        break;
+      case UserActions.ADD_POINT:
+        this.#pointPresenters.find((pp) => pp.point.id === update.id).setSaving();
+        try {
+          await this.#pointsModel.addPoint(updateType, update);
+        } catch(err) {
+          this.setAborting();
+        }
+        break;
+      case UserActions.DELETE_POINT:
+        this.#pointPresenters.find((pp) => pp.point.id === update.id).setDeleting();
+        try {
+          await this.#pointsModel.deletePoint(updateType, update);
+        } catch(err) {
+          this.#pointPresenters.find((pp) => pp.point.id === update.id).setAborting();
+        }
+        break;
+    }
+  };
+
   #handleModelEvent = (updateType, data) => {
     switch (updateType) {
       case UpdateTypes.PATCH:
@@ -151,13 +181,16 @@ export default class EventsPresenter {
   };
 
   #editPoint = (point) => {
-    this.#handleModelEvent = (UpdateTypes.PATCH, point);
+    this.#handleViewAction(UserActions.UPDATE_POINT, UpdateTypes.PATCH, point);
+    this.#handleModelEvent(UpdateTypes.PATCH, point);
     this.#clearAllPoints();
     this.#renderPoints();
   };
 
-  #deletePoint = (toDelete) => {
-    const index = this.#pointsModel.points.indexOf(toDelete);
+  #deletePoint = (point) => {
+    this.#handleViewAction(UserActions.UPDATE_POINT, UpdateTypes.MINOR, point);
+    this.#handleModelEvent(UpdateTypes.MINOR, point);
+    const index = this.#pointsModel.points.indexOf(point);
     this.#pointsModel.points.splice(index, 1);
     if (filter[this.#filtersModel.filter](this.points).length === 0) {
       this.#emptyListView = new EmptyListView(this.#filtersModel.filter);

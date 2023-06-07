@@ -12,6 +12,12 @@ const UpdateTypes = {
   MAJOR: 'MAJOR',
 };
 
+const UserActions = {
+  UPDATE_POINT: 'UPDATE_POINT',
+  ADD_POINT: 'ADD_POINT',
+  DELETE_POINT: 'DELETE_POINT'
+};
+
 const eventTypes = {
   TAXI: 'taxi',
   BUS: 'bus',
@@ -34,4 +40,4 @@ const PRIMARY_POINT = {
   type: eventTypes.FLIGHT,
 };
 
-export {eventTypes, PRIMARY_POINT, FilterTypes, UpdateTypes};
+export {eventTypes, PRIMARY_POINT, FilterTypes, UpdateTypes, UserActions};

@@ -39,7 +39,7 @@ export default class PointsModel extends Observable {
     }
   };
 
-  async updatePoint(updateType, update) {
+  updatePoint = async (updateType, update) => {
     const index = this.#points.findIndex((point) => point.id === update.id);
 
     if (index === -1) {
@@ -66,7 +66,7 @@ export default class PointsModel extends Observable {
     } catch(err) {
       throw new Error('Updating point failed.');
     }
-  }
+  };
 
   #adaptToClient = (point) => {
     const adaptedPoint = {...point,

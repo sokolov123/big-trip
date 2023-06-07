@@ -12,7 +12,7 @@ const createOffersTemplate = (currentOffers, offers) => {
   for (let i = 0; i < offers.length; i++) {
     const newOfferElement = document.createElement('div');
     newOfferElement.classList.add('event__offer-selector');
-    const isIncludes = (offers.filter((obj) => obj.id === currentOffers[i]).length > 0);
+    const isIncludes = (currentOffers.filter((obj) => obj === offers[i].id).length > 0);
     newOfferElement.insertAdjacentHTML('beforeend', `
       <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offers[i].title.toLowerCase()}-1" type="checkbox"
       name="event-offer-${offers[i].title.toLowerCase()}" value=${offers[i].id} ${isIncludes ? 'checked' : ''}>
@@ -162,8 +162,6 @@ export default class EventEditorView extends AbstractStatefulView {
     this.#setDatepickers();
   }
 
-  getState = () => this._state;
-
   removeElement = () => {
     super.removeElement();
 
@@ -245,7 +243,7 @@ export default class EventEditorView extends AbstractStatefulView {
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
     const offersCheckbox = this.element.querySelectorAll('.event__offer-checkbox');
-    const newOffers = Array.from(offersCheckbox).filter((i) => i.checked).map((i) => i.value);
+    const newOffers = Array.from(offersCheckbox).filter((i) => i.checked).map((i) => parseInt(i.value, 10));
     this.#newState.offers = newOffers;
     this.updateElement(this.#newState);
     this._callback.formSubmit();

@@ -1,4 +1,5 @@
 import { render, replace, remove } from '../framework/render';
+// import { UpdateTypes, UserActions } from '../mocks/const';
 import EventEditorView from '../view/event-editor-view';
 import PointInListView from '../view/point-in-list';
 
@@ -48,13 +49,14 @@ export default class PointPresenter {
     });
 
     this.#editPoint.setFormSubmitHandler(() => {
-      this._callback.onSubmit(this.#eventPoint);
+      this._callback.onSubmit(this.#eventPoint.getState());
       this.destroy();
     });
 
     this.#editPoint.setDeleteHandler(() => {
-      this._callback.onDelete(this.point);
-      this.destroy();
+      document.removeEventListener('keydown', this.#onEscKeyDown);
+      this._callback.onDelete(this.#point);
+      remove(this.#editPoint);
     });
 
     if (prevEventPoint === null || prevEditPoint === null) {
@@ -78,6 +80,25 @@ export default class PointPresenter {
     remove(this.#editPoint);
     remove(this.#eventPoint);
   };
+
+  setSaving() {
+    this.#editPoint.updateElement({
+      isDisabled: true,
+      isSaving: true,
+    });
+  }
+
+  setAborting() {
+    const resetFormState = () => {
+      this.#editPoint.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    this.#editPoint.shake(resetFormState);
+  }
 
   resetView = () => {
     if (this.#mode !== PointMode.DEFAULT) {
