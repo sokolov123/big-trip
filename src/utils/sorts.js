@@ -1,10 +1,12 @@
 import dayjs from 'dayjs';
 
 const sortByDay = (points) => points.sort((a, b) => dayjs(a.dateFrom).diff(dayjs(b.dateFrom)));
-const sortByEvent = (points) => points.sort((a, b) => {
-  if (a.destination.name === b.destination.name) {return 0;}
-  if (a.destination.name > b.destination.name) {return 1;}
-  if (a.destination.name < b.destination.name) {return -1;}
+const sortByEvent = (points, destinations) => points.sort((a, b) => {
+  const cityA = destinations.find((dest) => dest.id === a.destination).name;
+  const cityB = destinations.find((dest) => dest.id === b.destination).name;
+  if (cityA === cityB) {return 0;}
+  if (cityA > cityB) {return 1;}
+  if (cityA < cityB) {return -1;}
 });
 const sortByTime = (points) => points.sort((a, b) => {
   const durationA = dayjs(a.dateTo).diff(a.dateFrom);

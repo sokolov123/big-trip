@@ -6,7 +6,7 @@ import { render, remove, replace } from '../framework/render.js';
 import EmptyListView from '../view/empty-list-view.js';
 import { FilterTypes, UpdateTypes } from '../mocks/const.js';
 import PointPresenter from './point-presenter.js';
-import { PRIMARY_POINT } from '../mocks/const.js';
+import { PRIMARY_POINT, UserActions } from '../mocks/const.js';
 import { sortByDay, sortByEvent, sortByOffers, sortByPrice, sortByTime } from '../utils/sorts.js';
 import { filter } from '../utils/filter.js';
 
@@ -45,7 +45,7 @@ export default class EventsPresenter {
       case SortModes.DAY:
         return sortByDay(filteredPoints);
       case SortModes.EVENT:
-        return sortByEvent(filteredPoints);
+        return sortByEvent(filteredPoints, this.#pointsModel.destinations);
       case SortModes.TIME:
         return sortByTime(filteredPoints);
       case SortModes.PRICE:
@@ -59,16 +59,19 @@ export default class EventsPresenter {
   init = () => {
     this.#renderSort();
     render(this.#eventsUlistView, this.#eventsContainer);
+    this.#renderPoints();
     this.#newEventBtn.addEventListener('click', (evt) => {
-      this.#eventCreator = new EventCreatorView(structuredClone(PRIMARY_POINT), this.#addPoint, this.#resetAllPoints);
+      this.#eventCreator = new EventCreatorView(structuredClone(PRIMARY_POINT),
+        this.#addPoint,
+        this.#resetAllPoints,
+        this.#pointsModel.destinations,
+        this.#pointsModel.offers);
       evt.target.disabled = true;
       this.#clearAllPoints();
       render(this.#eventCreator, this.#eventsUlistView.element);
       this.#renderPoints();
       remove(this.#emptyListView);
     });
-
-    this.#renderPoints();
   };
 
   #handleSortModeChange = (sortMode) => {
@@ -79,6 +82,36 @@ export default class EventsPresenter {
     this.#currentSortMode = sortMode;
     this.#clearAllPoints();
     this.#renderPoints();
+  };
+
+  #handleViewAction = async (actionType, updateType, update) => {
+
+    switch (actionType) {
+      case UserActions.UPDATE_POINT:
+        this.#pointPresenters.find((pp) => pp.point.id === update.id).setSaving();
+        try {
+          await this.#pointsModel.updatePoint(updateType, update);
+        } catch(err) {
+          this.#pointPresenters.find((pp) => pp.point.id === update.id).setAborting();
+        }
+        break;
+      case UserActions.ADD_POINT:
+        this.#pointPresenters.find((pp) => pp.point.id === update.id).setSaving();
+        try {
+          await this.#pointsModel.addPoint(updateType, update);
+        } catch(err) {
+          this.setAborting();
+        }
+        break;
+      case UserActions.DELETE_POINT:
+        this.#pointPresenters.find((pp) => pp.point.id === update.id).setDeleting();
+        try {
+          await this.#pointsModel.deletePoint(updateType, update);
+        } catch(err) {
+          this.#pointPresenters.find((pp) => pp.point.id === update.id).setAborting();
+        }
+        break;
+    }
   };
 
   #handleModelEvent = (updateType, data) => {
@@ -92,8 +125,10 @@ export default class EventsPresenter {
         break;
       case UpdateTypes.MAJOR: {
         this.#currentSortMode = SortModes.DAY;
+        remove(this.#emptyListView);
         const prevSortView = this.#sortView;
         this.#sortView = new SortView(this.#currentSortMode);
+        this.#emptyListView = new EmptyListView(this.#filtersModel.filter);
         this.#sortView.setSortModeChangeHandler(this.#handleSortModeChange);
         replace(this.#sortView, prevSortView);
         this.#clearAllPoints();
@@ -114,7 +149,9 @@ export default class EventsPresenter {
     const pointPresenter = new PointPresenter(this.#eventsUlistView,
       this.#resetAllPoints,
       this.#deletePoint,
-      this.#editPoint);
+      this.#editPoint,
+      this.#pointsModel.destinations,
+      this.#pointsModel.offers);
     this.#pointPresenters.push(pointPresenter);
     pointPresenter.init(point);
   };
@@ -135,18 +172,25 @@ export default class EventsPresenter {
     this.#pointsModel.addPoint(point);
     this.#filtersModel.setFilter(UpdateTypes.MAJOR, FilterTypes.EVERYTHING);
     remove(this.#eventCreator);
-    this.#eventCreator = new EventCreatorView(structuredClone(PRIMARY_POINT), this.#addPoint, this.#resetAllPoints);
+    this.#eventCreator = new EventCreatorView(structuredClone(PRIMARY_POINT),
+      this.#addPoint,
+      this.#resetAllPoints,
+      this.#pointsModel.destinations,
+      this.#pointsModel.offers);
     this.#newEventBtn.disabled = false;
   };
 
   #editPoint = (point) => {
-    this.#handleModelEvent = (UpdateTypes.PATCH, point);
+    this.#handleViewAction(UserActions.UPDATE_POINT, UpdateTypes.PATCH, point);
+    this.#handleModelEvent(UpdateTypes.PATCH, point);
     this.#clearAllPoints();
     this.#renderPoints();
   };
 
-  #deletePoint = (toDelete) => {
-    const index = this.#pointsModel.points.indexOf(toDelete);
+  #deletePoint = (point) => {
+    this.#handleViewAction(UserActions.UPDATE_POINT, UpdateTypes.MINOR, point);
+    this.#handleModelEvent(UpdateTypes.MINOR, point);
+    const index = this.#pointsModel.points.indexOf(point);
     this.#pointsModel.points.splice(index, 1);
     if (filter[this.#filtersModel.filter](this.points).length === 0) {
       this.#emptyListView = new EmptyListView(this.#filtersModel.filter);
@@ -162,7 +206,11 @@ export default class EventsPresenter {
     this.#pointPresenters.forEach((pp) => pp.resetView());
     if (this.#eventCreator !== null) {
       remove(this.#eventCreator);
-      this.#eventCreator = new EventCreatorView(structuredClone(PRIMARY_POINT), this.#addPoint, this.#resetAllPoints);
+      this.#eventCreator = new EventCreatorView(structuredClone(PRIMARY_POINT),
+        this.#addPoint,
+        this.#resetAllPoints,
+        this.#pointsModel.destinations,
+        this.#pointsModel.offers);
       this.#newEventBtn.disabled = false;
     }
   };
