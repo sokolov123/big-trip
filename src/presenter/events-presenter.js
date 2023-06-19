@@ -1,10 +1,9 @@
 import SortView from '../view/sort-view.js';
-import { SortModes } from '../view/sort-view.js';
 import EventCreatorView from '../view/event-creator-view.js';
 import EventsUlistView from '../view/events-ulist-view.js';
 import { render, remove, replace } from '../framework/render.js';
 import EmptyListView from '../view/empty-list-view.js';
-import { FilterTypes, UpdateTypes, PRIMARY_POINT, UserActions } from '../const.js';
+import { FilterTypes, UpdateTypes, PRIMARY_POINT, UserActions, SortModes } from '../const.js';
 import PointPresenter from './point-presenter.js';
 import { sortByDay, sortByEvent, sortByOffers, sortByPrice, sortByTime } from '../utils/sorts.js';
 import { filter } from '../utils/filter.js';

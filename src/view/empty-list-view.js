@@ -25,13 +25,6 @@ const createEmptyListTemplate = (filter) => {
       <h2 class="visually-hidden">Trip events</h2>
 
       <p class="trip-events__msg">${message}</p>
-
-      <!--
-        Значение отображаемого текста зависит от выбранного фильтра:
-          * Everything - 'Click New Event to create your first point'
-          * Past — 'There are no past events now';
-          * Future — 'There are no future events now'.
-      -->
     </section>`);
 };
 

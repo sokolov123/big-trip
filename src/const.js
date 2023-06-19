@@ -40,4 +40,12 @@ const PRIMARY_POINT = {
   type: eventTypes.FLIGHT,
 };
 
-export {eventTypes, PRIMARY_POINT, FilterTypes, UpdateTypes, UserActions};
+const SortModes = {
+  DAY: 'day',
+  EVENT: 'event',
+  TIME: 'time',
+  PRICE: 'price',
+  OFFERS: 'offer'
+};
+
+export {eventTypes, PRIMARY_POINT, FilterTypes, UpdateTypes, UserActions, SortModes};

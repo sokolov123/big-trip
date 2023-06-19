@@ -1,13 +1,6 @@
 import AbstractView from '../framework/view/abstract-view.js';
+import { SortModes } from '../const.js';
 import { capitalizeFirstLetter } from '../utils/util.js';
-
-export const SortModes = {
-  DAY: 'day',
-  EVENT: 'event',
-  TIME: 'time',
-  PRICE: 'price',
-  OFFERS: 'offer'
-};
 
 const createSortButtons = (mode) => {
   const container = document.createElement('div');
